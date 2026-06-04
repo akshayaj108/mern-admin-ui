@@ -3,8 +3,9 @@ import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons";
 import Logo from "../../components/icons/logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Credentials } from "../../types";
-import { getSelf, login } from "../../http/api";
+import { getSelf, login, logout } from "../../http/api";
 import { useAuthStore } from "../../store";
+import { usePermission } from "../../hooks/usePermission";
 
 const loginUser = async (credentials: Credentials) =>{
   try {
@@ -18,17 +19,31 @@ const getLoginUserData = async () => {
   return data;
 }
 const LoginPage = () => {
-  const { setUser } = useAuthStore();
-  const { data: getUserData, refetch } = useQuery({
+  const { isAllowed } = usePermission();
+  const { setUser, logout: logoutFromStore } = useAuthStore();
+  const { refetch } = useQuery({
   queryKey: ["getSelf"],
   queryFn: getLoginUserData,  
   enabled: false,
 })
-  const { mutate, isPending, isError, error } = useMutation({
+const { mutate: logoutUser } = useMutation({
+  mutationKey: ['logout'],
+  mutationFn: logout,
+  onSuccess: () =>{
+    logoutFromStore()
+    return
+  }
+})
+  const { mutate: loginAdmin, isPending, isError, error } = useMutation({
     mutationKey: ["login"],
     mutationFn: loginUser,
     onSuccess: async () => { 
       const authenticatedUser = await refetch();
+  
+      if(!isAllowed(authenticatedUser.data)){
+        logoutUser()
+        return;
+      }
       setUser(authenticatedUser.data)
     }
   })
@@ -63,7 +78,7 @@ const LoginPage = () => {
             style={{ width: 300 }}
             variant="outlined"
           >
-            <Form initialValues={{ remember: true }} onFinish={(values) => mutate(values)}>
+            <Form initialValues={{ remember: true }} onFinish={(values) => loginAdmin(values)}>
               {isError && <Alert title={error.message} type="error" showIcon style={{ marginBottom: 16 }} />}
               <Form.Item
                 name="username"
