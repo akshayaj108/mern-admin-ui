@@ -6,6 +6,7 @@ import type { Credentials } from "../../types";
 import { getSelf, login, logout } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { usePermission } from "../../hooks/usePermission";
+import { useLogout } from "../../hooks/useLogout";
 
 const loginUser = async (credentials: Credentials) =>{
   try {
@@ -20,20 +21,14 @@ const getLoginUserData = async () => {
 }
 const LoginPage = () => {
   const { isAllowed } = usePermission();
-  const { setUser, logout: logoutFromStore } = useAuthStore();
+  const { logoutUser } = useLogout();
+  const { setUser } = useAuthStore();
   const { refetch } = useQuery({
   queryKey: ["getSelf"],
   queryFn: getLoginUserData,  
   enabled: false,
 })
-const { mutate: logoutUser } = useMutation({
-  mutationKey: ['logout'],
-  mutationFn: logout,
-  onSuccess: () =>{
-    logoutFromStore()
-    return
-  }
-})
+
   const { mutate: loginAdmin, isPending, isError, error } = useMutation({
     mutationKey: ["login"],
     mutationFn: loginUser,
