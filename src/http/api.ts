@@ -3,4 +3,4 @@ import { api } from "./client";
 
 export const login = async (credentials: Credentials) => api.post("/auth/login", {email: credentials.username, pass: credentials.password});
 export const getSelf = async () => api.get("/auth/self");
-export const logout = async () => api.post("/auth/logout")
+export const logout = async () => api.post("/auth/logout");
