@@ -13,7 +13,11 @@ const Root = () => {
 const { setUser } = useAuthStore();
 const { data, isLoading } = useQuery({
   queryKey: ["getSelf"],
-  queryFn: getLoginUserData,  
+  queryFn: getLoginUserData, 
+  // staleTime: Infinity, // never becomes stale 
+  refetchOnWindowFocus: false, // don't refetch when switching tabs
+  refetchOnReconnect: false,  // don't refetch on internet reconnect
+  refetchOnMount: false, 
   retry: (failureCount: number, error) =>{
     if(error instanceof AxiosError && error.response?.status === 401){
       return false;
