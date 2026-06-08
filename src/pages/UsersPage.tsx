@@ -1,10 +1,11 @@
 import { Breadcrumb, Space, Table } from "antd";
 import { RightOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { users } from "../http/api";
 import { render } from "@testing-library/react";
 import type { User } from "../types";
+import { useAuthStore } from "../store";
 const dataSource = [
   {
     key: "1",
@@ -51,6 +52,10 @@ const getUsers = async () => {
   }
 };
 const Users = () => {
+  const { user } = useAuthStore();
+  if(user?.role === "manager"){
+    return <Navigate to={"/"} />
+  }
   const {
     data: users,
     isLoading,
