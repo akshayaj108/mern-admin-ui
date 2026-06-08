@@ -12,17 +12,39 @@ const UserForm = () => {
           <Card title="Basic Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="First name" name="firstName">
-                <Input placeholder="John" />
+              <FormItem label="First name" name="firstName" 
+                rules={[
+                  {
+                    required: true,
+                    message: "First name is required"
+                  }
+                ]}>
+                <Input size="large" placeholder="John" />
               </FormItem>
             </Col>
             <Col span={12}>
-              <FormItem label="Last name" name="lastame">
+              <FormItem label="Last name" name="lastName"
+                  rules={[
+                  {
+                    required: true,
+                    message: "Last name is required"
+                  }
+                ]}>
                 <Input size="large" placeholder="Roy" />
               </FormItem>
             </Col>
             <Col span={24}>
-              <FormItem label="Email" name="email">
+              <FormItem label="Email" name="email"
+                rules={[
+                  {
+                    required: true,
+                    message: "Email is required"
+                  },
+                  {
+                    type: "email",
+                    message: "Email is not valid"
+                  }
+                ]}>
                 <Input size="large" placeholder="john.d@gmail.com" />
               </FormItem>
             </Col>
@@ -31,12 +53,41 @@ const UserForm = () => {
         <Card title="Security Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="Password" name="pass">
+              <FormItem label="Password" name="pass"
+               rules={[
+                  {
+                    required: true,
+                    message: "Password is required"
+                  },
+                  {
+                    min: 4,
+                    message: "Password must be at least 4 characters"
+                  }
+                ]}
+              >
                 <Input.Password size="large" placeholder="***" />
               </FormItem>
             </Col>
             <Col span={12}>
-              <FormItem label="Confirm password" name="confirmPass">
+              <FormItem label="Confirm password" name="confirmPass"
+              dependencies={["pass"]}
+               rules={[
+                  {
+                    required: true,
+                    message: "Please confirm your password"
+                  },
+                  ({getFieldValue}) =>({
+                    validator(_next, value){
+                      if(!value || getFieldValue("pass") === value){
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error("Password do not match")
+                      );
+                    }
+                  })
+                ]}
+              >
                 <Input.Password size="large" placeholder="***" />
               </FormItem>
             </Col>
@@ -46,7 +97,14 @@ const UserForm = () => {
         <Card title="Role Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="Role" name="role">
+              <FormItem label="Role" name="role"
+               rules={[
+                  {
+                    required: true,
+                    message: "Role is required"
+                  },
+                ]}
+              >
                 <Select
                 // defaultValue="lucy"
                 allowClear
@@ -62,7 +120,14 @@ const UserForm = () => {
               </FormItem>
             </Col>
             <Col span={12}>
-              <FormItem label="Restaurants" name="tenants">
+              <FormItem label="Restaurants" name="tenants"
+               rules={[
+                  {
+                    required: true,
+                    message: " is required"
+                  },
+                ]}
+              >
                 <Select
                 // defaultValue="lucy"
                 allowClear
