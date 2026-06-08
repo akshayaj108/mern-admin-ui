@@ -2,10 +2,11 @@ import { Breadcrumb, Space, Table } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { users } from "../http/api";
+import { users } from "../../http/api";
 import { render } from "@testing-library/react";
-import type { User } from "../types";
-import { useAuthStore } from "../store";
+import type { User } from "../../types";
+import { useAuthStore } from "../../store";
+import UsersFilter from "./UsersFilter";
 const dataSource = [
   {
     key: "1",
@@ -68,7 +69,7 @@ const Users = () => {
 
   return (
     <>
-      <Space orientation="vertical" style={{ width: "100%" }}>
+      <Space orientation="vertical" size="large" style={{ width: "100%" }}>
         <Breadcrumb
           separator={<RightOutlined />}
           items={[
@@ -82,6 +83,7 @@ const Users = () => {
         />
         {isLoading && <>Loading ...</>}
         {isError && <>{error.message} </>}
+        <UsersFilter />
         <Table dataSource={users} columns={columns} />;
       </Space>
     </>
