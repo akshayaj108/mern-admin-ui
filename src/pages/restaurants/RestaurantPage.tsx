@@ -1,11 +1,10 @@
 import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { restaurants } from "../../http/api";
 import { PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import RestaurantFilter from "./RestaurantFilter";
+import useGetTenants from "../../hooks/api/tenant/useGetTenant";
 
 const columns = [
   {
@@ -24,20 +23,14 @@ const columns = [
     key: "address",
   },
 ];
-const getRestaurants = async () =>{
-    try {
-        const response = await restaurants();
-        return response.data;
-    } catch (error) {
-        console.log("getting error while fetching restaurants", error);
-    }
-}
+
 const Restaurant = () => {
 const [drawerOpen, setDrawerOpen] = useState(false);
-const { data: allRestaurnants, isLoading, isError, error } = useQuery({
-    queryKey: ["tenants"],
-    queryFn: getRestaurants
-});
+const { data: allRestaurnants, isLoading, isError, error } = useGetTenants();
+// const { data: allRestaurnants, isLoading, isError, error } = useQuery({
+//     queryKey: ["tenants"],
+//     queryFn: getRestaurants
+// });
 
   return (
     <>
