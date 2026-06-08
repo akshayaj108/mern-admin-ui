@@ -1,14 +1,13 @@
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { users } from "../../http/api";
 import { PlusOutlined } from "@ant-design/icons";
 import type { User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
+import useGetUsers from "../../hooks/api/users/useGetUsers";
 
 const columns = [
   {
@@ -32,14 +31,7 @@ const columns = [
     key: "role",
   },
 ];
-const getUsers = async () => {
-  try {
-    const response = await users();
-    return response.data;
-  } catch (error) {
-    console.log("getting error while fetching users", error);
-  }
-};
+
 const Users = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const {
@@ -54,10 +46,7 @@ const Users = () => {
     isLoading,
     isError,
     error,
-  } = useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
-  });
+  } = useGetUsers();
 
   return (
     <>
