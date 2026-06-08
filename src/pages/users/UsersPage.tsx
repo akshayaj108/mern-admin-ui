@@ -1,26 +1,13 @@
-import { Breadcrumb, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { users } from "../../http/api";
-import { render } from "@testing-library/react";
+import { PlusOutlined } from "@ant-design/icons";
 import type { User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
-const dataSource = [
-  {
-    key: "1",
-    name: "Mike",
-    age: 32,
-    address: "10 Downing Street",
-  },
-  {
-    key: "2",
-    name: "John",
-    age: 42,
-    address: "10 Downing Street",
-  },
-];
+import { useState } from "react";
 
 const columns = [
   {
@@ -53,9 +40,10 @@ const getUsers = async () => {
   }
 };
 const Users = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { user } = useAuthStore();
-  if(user?.role === "manager"){
-    return <Navigate to={"/"} />
+  if (user?.role === "manager") {
+    return <Navigate to={"/"} />;
   }
   const {
     data: users,
@@ -83,11 +71,36 @@ const Users = () => {
         />
         {isLoading && <>Loading ...</>}
         {isError && <>{error.message} </>}
-        <UsersFilter onFilterChange={(filterName, filterValue) =>{
-          console.log("filter name- ", filterName);
-          console.log("filter value- ", filterValue);
-        }} />
-        <Table dataSource={users} columns={columns} rowKey={"id"}/>;
+        <UsersFilter
+          onFilterChange={(filterName, filterValue) => {
+            console.log("filter name- ", filterName);
+            console.log("filter value- ", filterValue);
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setDrawerOpen(true)}
+          >
+            Add User
+          </Button>
+        </UsersFilter>
+        <Table dataSource={users} columns={columns} rowKey={"id"} />;
+        <Drawer
+          title={"Create user"}
+          size={420}
+          destroyOnHidden
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          extra={
+            <Space>
+              <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
+              <Button onClick={() => setDrawerOpen(false)} type="primary">
+                Submit
+              </Button>
+            </Space>
+          }
+        ></Drawer>
       </Space>
     </>
   );
