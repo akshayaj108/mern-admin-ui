@@ -8,6 +8,7 @@ import UsersFilter from "./UsersFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
 import useGetUsers from "../../hooks/api/users/useGetUsers";
+import useCreateUser from "../../hooks/api/users/useCreateUser";
 
 const columns = [
   {
@@ -34,6 +35,7 @@ const columns = [
 
 const Users = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ form ] = Form.useForm();
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -47,7 +49,14 @@ const Users = () => {
     isError,
     error,
   } = useGetUsers();
-
+  const { mutate: createUserMutate, isPending: isSubmitting} = useCreateUser();
+const onHandleSubmit = async () =>{
+  await form.validateFields();
+  const data = form.getFieldsValue()  
+  await createUserMutate(data);
+  form.resetFields();
+  setDrawerOpen(false);
+}
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -88,14 +97,17 @@ const Users = () => {
           onClose={() => setDrawerOpen(false)}
           extra={
             <Space>
-              <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
-              <Button onClick={() => setDrawerOpen(false)} type="primary">
+              <Button onClick={() => {
+                form.resetFields();
+                setDrawerOpen(false);
+              }}>Cancel</Button>
+              <Button onClick={onHandleSubmit} loading={isSubmitting} type="primary">
                 Submit
               </Button>
             </Space>
           }
         >
-          <Form layout="vertical">
+          <Form form={form} layout="vertical">
             <UserForm />
           </Form>
         </Drawer>

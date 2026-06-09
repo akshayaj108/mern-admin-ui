@@ -1,5 +1,4 @@
-import { Card, Col, Input, Row, Select, Space } from "antd";
-import FormItem from "antd/es/form/FormItem";
+import { Card, Col, Input, Row, Select, Space, Form } from "antd";
 import useGetTenants from "../../../hooks/api/tenant/useGetTenant";
 import type { Tenant } from "../../../types";
 
@@ -12,7 +11,7 @@ const UserForm = () => {
           <Card title="Basic Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="First name" name="firstName" 
+              <Form.Item label="First name" name="firstName" 
                 rules={[
                   {
                     required: true,
@@ -20,10 +19,10 @@ const UserForm = () => {
                   }
                 ]}>
                 <Input size="large" placeholder="John" />
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="Last name" name="lastName"
+              <Form.Item label="Last name" name="lastName"
                   rules={[
                   {
                     required: true,
@@ -31,10 +30,10 @@ const UserForm = () => {
                   }
                 ]}>
                 <Input size="large" placeholder="Roy" />
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={24}>
-              <FormItem label="Email" name="email"
+              <Form.Item label="Email" name="email"
                 rules={[
                   {
                     required: true,
@@ -46,14 +45,14 @@ const UserForm = () => {
                   }
                 ]}>
                 <Input size="large" placeholder="john.d@gmail.com" />
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
         </Card>
         <Card title="Security Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="Password" name="pass"
+              <Form.Item label="Password" name="pass"
                rules={[
                   {
                     required: true,
@@ -66,10 +65,10 @@ const UserForm = () => {
                 ]}
               >
                 <Input.Password size="large" placeholder="***" />
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="Confirm password" name="confirmPass"
+              <Form.Item label="Confirm password" name="confirmPass"
               dependencies={["pass"]}
                rules={[
                   {
@@ -89,7 +88,7 @@ const UserForm = () => {
                 ]}
               >
                 <Input.Password size="large" placeholder="***" />
-              </FormItem>
+              </Form.Item>
             </Col>
        
           </Row>
@@ -97,7 +96,7 @@ const UserForm = () => {
         <Card title="Role Info">
           <Row gutter={20}>
             <Col span={12}>
-              <FormItem label="Role" name="role"
+              <Form.Item label="Role" name="role"
                rules={[
                   {
                     required: true,
@@ -117,17 +116,10 @@ const UserForm = () => {
                   { value: "customer", label: "Customer" },
                 ]}
               />
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="Restaurants" name="tenants"
-               rules={[
-                  {
-                    required: true,
-                    message: " is required"
-                  },
-                ]}
-              >
+              <Form.Item label="Restaurants" name="tenantId">
                 <Select
                 // defaultValue="lucy"
                 allowClear
@@ -139,9 +131,8 @@ const UserForm = () => {
                   label: resturant.name
                 }))}
               />
-              </FormItem>
+              </Form.Item>
             </Col>
-       
           </Row>
         </Card>
       </Space>

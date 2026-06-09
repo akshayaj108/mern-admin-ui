@@ -17,7 +17,6 @@ const UsersFilter = ({onFilterChange, children}: FilterProps) => {
               <Select
                 // defaultValue="lucy"
                 allowClear
-                style={{ width: 120 }}
                 onChange={(selected) => onFilterChange("roleFilter", selected)}
                 placeholder="Select a role"
                 options={[
@@ -31,7 +30,6 @@ const UsersFilter = ({onFilterChange, children}: FilterProps) => {
             <Select
                 // defaultValue="Active"
                 allowClear
-                style={{ width: 120 }}
                 onChange={(selected) => onFilterChange("statusFilter", selected)}
                 placeholder="Select status"
                 options={[
