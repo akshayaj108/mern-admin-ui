@@ -1,11 +1,12 @@
-import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Form, Space, Table } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import RestaurantFilter from "./RestaurantFilter";
 import useGetTenants from "../../hooks/api/tenant/useGetTenant";
-
+import RestaurantForm from "./form/RestaurantForm";
+import useCreateRestaurant from "../../hooks/api/tenant/useCreateTenant";
 const columns = [
   {
     title: "Name",
@@ -25,13 +26,18 @@ const columns = [
 ];
 
 const Restaurant = () => {
+const [ form ] = Form.useForm();
 const [drawerOpen, setDrawerOpen] = useState(false);
-const { data: allRestaurnants, isLoading, isError, error } = useGetTenants();
-// const { data: allRestaurnants, isLoading, isError, error } = useQuery({
-//     queryKey: ["tenants"],
-//     queryFn: getRestaurants
-// });
 
+const { data: allRestaurnants, isLoading, isError, error } = useGetTenants();
+const { mutate: createRestaurantMurate, isPending: isSubmitting } = useCreateRestaurant();
+const onHandleSubmit = async () =>{
+  await form.validateFields();
+  const data = form.getFieldsValue();
+  await createRestaurantMurate(data);
+  form.resetFields();
+  setDrawerOpen(false);
+}
   return (
     <>
      <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -71,13 +77,21 @@ const { data: allRestaurnants, isLoading, isError, error } = useGetTenants();
           onClose={() => setDrawerOpen(false)}
           extra={
             <Space>
-              <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
-              <Button onClick={() => setDrawerOpen(false)} type="primary">
+              <Button onClick={() => {
+                form.resetFields();
+                setDrawerOpen(false)
+              }
+              }>Cancel</Button>
+              <Button onClick={onHandleSubmit} loading={isSubmitting} type="primary">
                 Submit
               </Button>
             </Space>
           }
-        ></Drawer>
+        >
+          <Form form={form} layout="vertical">
+            <RestaurantForm />
+          </Form>
+        </Drawer>
       </Space>
     </>
   )

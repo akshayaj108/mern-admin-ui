@@ -29,3 +29,8 @@ export type Tenant = {
   createdAt: string,
   updatedAt: string
 }
+
+export type CreateTenantData = {
+  name: string,
+  address: string
+}
