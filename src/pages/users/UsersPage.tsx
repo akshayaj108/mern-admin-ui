@@ -2,13 +2,14 @@ import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
-import type { User } from "../../types";
+import { type QueryData, type User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
 import useGetUsers from "../../hooks/api/users/useGetUsers";
 import useCreateUser from "../../hooks/api/users/useCreateUser";
+import { PER_PAGE } from "../../constants";
 
 const columns = [
   {
@@ -35,7 +36,11 @@ const columns = [
 
 const Users = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [ form ] = Form.useForm();
+  const [queryParams, setQueryParams] = useState<QueryData>({
+    currentPage: "1",
+    perPage: String(PER_PAGE),
+  });
+  const [form] = Form.useForm();
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -43,20 +48,15 @@ const Users = () => {
   if (user?.role === "manager") {
     return <Navigate to={"/"} />;
   }
-  const {
-    data: users,
-    isLoading,
-    isError,
-    error,
-  } = useGetUsers();
-  const { mutate: createUserMutate, isPending: isSubmitting} = useCreateUser();
-const onHandleSubmit = async () =>{
-  await form.validateFields();
-  const data = form.getFieldsValue()  
-  await createUserMutate(data);
-  form.resetFields();
-  setDrawerOpen(false);
-}
+  const { data: users, isLoading, isError, error } = useGetUsers(queryParams);
+  const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    const data = form.getFieldsValue();
+    await createUserMutate(data);
+    form.resetFields();
+    setDrawerOpen(false);
+  };
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -87,7 +87,26 @@ const onHandleSubmit = async () =>{
             Add User
           </Button>
         </UsersFilter>
-        <Table dataSource={users} columns={columns} rowKey={"id"} />;
+        <Table
+          dataSource={users?.data}
+          columns={columns}
+          rowKey={"id"}
+          pagination={{
+            total: users?.total,
+            current: users?.currentPage,
+            pageSize: users?.perPage,
+            onChange: (page, pageSize) => {
+              setQueryParams((prevQueryParams) => {
+                return {
+                  ...prevQueryParams,
+                  currentPage: page.toString(),
+                  perPage: pageSize.toString(),
+                };
+              });
+            },
+          }}
+        />
+        ;
         <Drawer
           title={"Create user"}
           size={620}
@@ -97,11 +116,19 @@ const onHandleSubmit = async () =>{
           onClose={() => setDrawerOpen(false)}
           extra={
             <Space>
-              <Button onClick={() => {
-                form.resetFields();
-                setDrawerOpen(false);
-              }}>Cancel</Button>
-              <Button onClick={onHandleSubmit} loading={isSubmitting} type="primary">
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  setDrawerOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={onHandleSubmit}
+                loading={isSubmitting}
+                type="primary"
+              >
                 Submit
               </Button>
             </Space>

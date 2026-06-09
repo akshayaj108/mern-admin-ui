@@ -1,8 +1,8 @@
 import { createUserApi, getUsersApi } from "../../../http/api";
-import type { CreateUser, User } from "../../../types";
+import type { CreateUser, UserResponse } from "../../../types";
 
-export const getUsers = async (): Promise<User[]> => {
-    const response = await getUsersApi();
+export const getUsers = async (query: string): Promise<UserResponse> => {
+    const response = await getUsersApi(query);
     return response.data;
 };
 

@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "./users";
+import type { QueryData } from "../../../types";
 
-const useGetUsers = () =>{
+const useGetUsers = (query: QueryData) =>{
 
     return useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
+    queryKey: ["users", query],
+    queryFn: () =>{
+      const queryString = new URLSearchParams(query).toString();
+      return getUsers(queryString);
+    },
      // staleTime: Infinity, // never becomes stale
     refetchOnWindowFocus: false, // don't refetch when switching tabs
     refetchOnReconnect: false, // don't refetch on internet reconnect

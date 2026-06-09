@@ -12,7 +12,12 @@ export type User = {
   createdAt: string,
   updatedAt: string
 };
-
+export type UserResponse ={
+  data: User[],
+  currentPage: number,
+  perPage: number,
+  total: number
+}
 export type CreateUser ={
   firstName: string,
   lastName: string,
@@ -33,4 +38,9 @@ export type Tenant = {
 export type CreateTenantData = {
   name: string,
   address: string
+}
+
+export type QueryData ={
+  currentPage: string,
+  perPage: string
 }
