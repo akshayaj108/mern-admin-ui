@@ -1,19 +1,19 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuthStore } from "../store"
-
+import { useAuthStore } from "../store";
 
 const NonAuthBoard = () => {
   const location = useLocation();
-    const { user } = useAuthStore();
-    if(user !== null){
-        const returnPath = new URLSearchParams(location.search).get('returnTo') || '/'
-        return <Navigate to={returnPath} replace={true} />
-    }
+  const { user } = useAuthStore();
+  if (user !== null) {
+    const returnPath =
+      new URLSearchParams(location.search).get("returnTo") || "/";
+    return <Navigate to={returnPath} replace={true} />;
+  }
   return (
-   <>
-    <Outlet />
-   </>
-  )
-}
+    <>
+      <Outlet />
+    </>
+  );
+};
 
-export default NonAuthBoard
+export default NonAuthBoard;
