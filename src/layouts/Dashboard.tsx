@@ -20,36 +20,40 @@ import { useLogout } from "../hooks/useLogout";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-  const baseItems = [
-    {
-      key: "/",
-      icon: <Icon component={HomeIcon} />,
-      label: <NavLink to="/">Home</NavLink>,
-    },
-    {
-      key: "/restaurants",
-      icon: <UserOutlined />,
-      label: <NavLink to="/restaurants">Restaurants</NavLink>,
-    },
-    {
-      key: "/products",
-      icon: <Icon component={ProductIcon} />,
-      label: <NavLink to="/products">Products</NavLink>,
-    },
-    {
-      key: "/promos",
-      icon: <Icon component={PromosIcon} />,
-      label: <NavLink to="/promos">Promos</NavLink>,
-    },
-  ];
+const baseItems = [
+  {
+    key: "/",
+    icon: <Icon component={HomeIcon} />,
+    label: <NavLink to="/">Home</NavLink>,
+  },
+  {
+    key: "/products",
+    icon: <Icon component={ProductIcon} />,
+    label: <NavLink to="/products">Products</NavLink>,
+  },
+  {
+    key: "/promos",
+    icon: <Icon component={PromosIcon} />,
+    label: <NavLink to="/promos">Promos</NavLink>,
+  },
+];
 const getMenuItems = (role: string) => {
   if (role === "admin") {
     const arrangeMenuItem = [...baseItems];
-    arrangeMenuItem.splice(1, 0, {
-      key: "/users",
-      icon: <UserOutlined />,
-      label: <NavLink to="/users">Users</NavLink>,
-    });
+    arrangeMenuItem.splice(
+      1,
+      0,
+      {
+        key: "/users",
+        icon: <UserOutlined />,
+        label: <NavLink to="/users">Users</NavLink>,
+      },
+      {
+        key: "/restaurants",
+        icon: <UserOutlined />,
+        label: <NavLink to="/restaurants">Restaurants</NavLink>,
+      },
+    );
     return arrangeMenuItem;
   }
   return baseItems;
@@ -65,7 +69,12 @@ const Dashboard = () => {
 
   const { user } = useAuthStore();
   if (user === null) {
-    return <Navigate to={`/auth/login?returnTo=${location.pathname}`} replace={true} />;
+    return (
+      <Navigate
+        to={`/auth/login?returnTo=${location.pathname}`}
+        replace={true}
+      />
+    );
   }
   const items = getMenuItems(user?.role);
   return (
