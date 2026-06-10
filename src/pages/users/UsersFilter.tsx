@@ -1,23 +1,25 @@
-import { Card, Col, Input, Row, Select } from "antd";
+import { Card, Col, Form, Input, Row, Select } from "antd";
 
 type FilterProps = {
-  onFilterChange: (filterName: string, filterValue: string) => void;
   children: React.ReactNode;
 }
-const UsersFilter = ({onFilterChange, children}: FilterProps) => {
+const UsersFilter = ({ children }: FilterProps) => {
   return (
     <Card>
       <Row justify={"space-between"}>
         <Col span={16}>
           <Row gutter={20}>
             <Col span={12}>
-              <Input.Search allowClear placeholder="Search" onChange={(e) => onFilterChange("userSearchFilter", e.target.value)} />
-            </Col>
-            <Col>
+            <Form.Item name="q">
+              <Input.Search allowClear placeholder="Search"  />
+            </Form.Item>
+                 </Col>
+            
+              <Col>
+              <Form.Item name="role">
               <Select
                 // defaultValue="lucy"
                 allowClear
-                onChange={(selected) => onFilterChange("roleFilter", selected)}
                 placeholder="Select a role"
                 options={[
                   { value: "admin", label: "Admin" },
@@ -25,8 +27,10 @@ const UsersFilter = ({onFilterChange, children}: FilterProps) => {
                   { value: "customer", label: "Customer" },
                 ]}
               />
+                   </Form.Item>
             </Col>
-            <Col>
+       
+            {/* <Col>
             <Select
                 // defaultValue="Active"
                 allowClear
@@ -37,7 +41,7 @@ const UsersFilter = ({onFilterChange, children}: FilterProps) => {
                   { value: "ban", label: "Banned" }
                 ]}
               />
-            </Col>
+            </Col> */}
           </Row>
         </Col>
         <Col>

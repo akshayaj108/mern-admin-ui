@@ -1,8 +1,19 @@
-import { Breadcrumb, Button, Drawer, Flex, Form, Space, Spin, Table, theme, Typography } from "antd";
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+  Typography,
+} from "antd";
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
-import { type QueryData, type User } from "../../types";
+import { type FieldData, type QueryData, type User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
@@ -40,11 +51,15 @@ const Users = () => {
     currentPage: "1",
     perPage: String(PER_PAGE),
   });
+
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
   const {
     token: { colorBgLayout },
   } = theme.useToken();
+
   const { user } = useAuthStore();
+
   if (user?.role === "manager") {
     return <Navigate to={"/"} />;
   }
@@ -57,45 +72,65 @@ const Users = () => {
     form.resetFields();
     setDrawerOpen(false);
   };
+
+  const onFilterChange = (changedValues: FieldData) => {
+    const filters = {
+      q: changedValues.q ?? "",
+      role: changedValues.role ?? "",
+    };
+
+    setQueryParams(prev => ({
+      ...prev,
+      ...filters,
+      currentPage: "1",
+    }));
+  };
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
         <Flex justify="space-between">
           <Breadcrumb
-          separator={<RightOutlined />}
-          items={[
-            {
-              title: <Link to="/">Dashboard</Link>,
-            },
-            {
-              title: "Users",
-            },
-          ]}
-        />
-        {isFetching && (
-              <Spin style={{ marginRight: 8}} indicator={<LoadingOutlined spin />} />
-        )}
-        {isError && <Typography.Text type="danger">{"Something went wrong! failed to fetch users"} </Typography.Text>}
+            separator={<RightOutlined />}
+            items={[
+              {
+                title: <Link to="/">Dashboard</Link>,
+              },
+              {
+                title: "Users",
+              },
+            ]}
+          />
+          {isFetching && (
+            <Spin
+              style={{ marginRight: 8 }}
+              indicator={<LoadingOutlined spin />}
+            />
+          )}
+          {isError && (
+            <Typography.Text type="danger">
+              {"Something went wrong! failed to fetch users"}{" "}
+            </Typography.Text>
+          )}
         </Flex>
-        
-        <UsersFilter
-          onFilterChange={(filterName, filterValue) => {
-            console.log("filter name- ", filterName);
-            console.log("filter value- ", filterValue);
-          }}
+        <Form
+          form={filterForm}
+          onValuesChange={(_, allValues) => onFilterChange(allValues)}
         >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
-          >
-            Add User
-          </Button>
-        </UsersFilter>
+          <UsersFilter>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerOpen(true)}
+            >
+              Add User
+            </Button>
+          </UsersFilter>
+        </Form>
         <Table
           dataSource={users?.data}
           columns={columns}
           rowKey={"id"}
+          loading={isFetching}
           pagination={{
             total: users?.total,
             current: users?.currentPage,

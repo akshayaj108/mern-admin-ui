@@ -44,3 +44,8 @@ export type QueryData ={
   currentPage: string,
   perPage: string
 }
+
+export type FieldData ={
+  q: string,
+  role?: string
+}
