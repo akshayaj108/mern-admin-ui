@@ -1,12 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getRestaurants } from "./tenant";
+import type { QueryData } from "../../../types";
 
 
 
-const useGetTenants = () =>{
+const useGetTenants = (query: QueryData) =>{
     return useQuery({
-    queryKey: ["tenants"],
-    queryFn: getRestaurants,
+    queryKey: ["tenants", query],
+    queryFn: () =>{
+        const queryString = new URLSearchParams(query).toString();
+        return getRestaurants(queryString)
+    },
+    placeholderData: keepPreviousData,
      // staleTime: Infinity, // never becomes stale
     refetchOnWindowFocus: false, // don't refetch when switching tabs
     refetchOnReconnect: false, // don't refetch on internet reconnect

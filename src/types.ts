@@ -35,6 +35,12 @@ export type Tenant = {
   createdAt: string,
   updatedAt: string
 }
+export type TenantResponse ={
+  data: Tenant[],
+  currentPage: number,
+  perPage: number,
+  total: number
+}
 
 export type CreateTenantData = {
   name: string,
@@ -47,6 +53,10 @@ export type QueryData ={
 }
 
 export type UserFilterValues = {
+  q?: string;
+  role?: string;
+};
+export type TenantFilterValues = {
   q?: string;
   role?: string;
 };

@@ -1,8 +1,8 @@
 import { createRestaurantApi, restaurantsApi } from "../../../http/api";
-import type { CreateTenantData } from "../../../types";
+import type { CreateTenantData, TenantResponse } from "../../../types";
 
-export const getRestaurants = async () => {
-  const response = await restaurantsApi();
+export const getRestaurants = async (query: string): Promise<TenantResponse> => {
+  const response = await restaurantsApi(query);
   return response.data;
 };
 
