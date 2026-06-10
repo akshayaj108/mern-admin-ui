@@ -11,6 +11,7 @@ export type User = {
   role: string,
   createdAt: string,
   updatedAt: string
+  tenant: Tenant
 };
 export type UserResponse ={
   data: User[],
