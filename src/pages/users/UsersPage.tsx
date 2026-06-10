@@ -1,5 +1,5 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
-import { RightOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Drawer, Flex, Form, Space, Spin, Table, theme, Typography } from "antd";
+import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
 import { type QueryData, type User } from "../../types";
@@ -48,7 +48,7 @@ const Users = () => {
   if (user?.role === "manager") {
     return <Navigate to={"/"} />;
   }
-  const { data: users, isLoading, isError, error } = useGetUsers(queryParams);
+  const { data: users, isFetching, isError, error } = useGetUsers(queryParams);
   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
   const onHandleSubmit = async () => {
     await form.validateFields();
@@ -60,7 +60,8 @@ const Users = () => {
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
-        <Breadcrumb
+        <Flex justify="space-between">
+          <Breadcrumb
           separator={<RightOutlined />}
           items={[
             {
@@ -71,8 +72,12 @@ const Users = () => {
             },
           ]}
         />
-        {isLoading && <>Loading ...</>}
-        {isError && <>{error.message} </>}
+        {isFetching && (
+              <Spin style={{ marginRight: 8}} indicator={<LoadingOutlined spin />} />
+        )}
+        {isError && <Typography.Text type="danger">{"Something went wrong! failed to fetch users"} </Typography.Text>}
+        </Flex>
+        
         <UsersFilter
           onFilterChange={(filterName, filterValue) => {
             console.log("filter name- ", filterName);
