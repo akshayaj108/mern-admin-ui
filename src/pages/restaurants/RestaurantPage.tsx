@@ -53,7 +53,7 @@ const debounceSerachInput = useMemo(() =>{
       q: value ?? "",
       currentPage: "1",
     }));
-  },600)
+  },500)
 },[])
   const onFilterChange = (changedValues: TenantFilterValues) => {
     if(changedValues.q !== undefined){
@@ -120,6 +120,9 @@ const onHandleSubmit = async () =>{
                 currentPage: page.toString()
               }))
             },
+             showTotal: (total: number, range: number[]) =>{
+              return `Showing ${range[0]} - ${range[1]} of ${total} items`
+            }
           }}
           />;
         <Drawer
