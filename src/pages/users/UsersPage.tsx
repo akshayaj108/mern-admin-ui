@@ -13,14 +13,15 @@ import {
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
-import { type FieldData, type QueryData, type User } from "../../types";
+import { type UserFilterValues, type QueryData, type User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import useGetUsers from "../../hooks/api/users/useGetUsers";
 import useCreateUser from "../../hooks/api/users/useCreateUser";
 import { PER_PAGE } from "../../constants";
+import { debounce } from "lodash";
 
 const columns = [
   {
@@ -63,7 +64,7 @@ const Users = () => {
   if (user?.role === "manager") {
     return <Navigate to={"/"} />;
   }
-  const { data: users, isFetching, isError, error } = useGetUsers(queryParams);
+  const { data: users, isFetching, isError } = useGetUsers(queryParams);
   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
   const onHandleSubmit = async () => {
     await form.validateFields();
@@ -72,18 +73,25 @@ const Users = () => {
     form.resetFields();
     setDrawerOpen(false);
   };
-
-  const onFilterChange = (changedValues: FieldData) => {
-    const filters = {
-      q: changedValues.q ?? "",
-      role: changedValues.role ?? "",
-    };
-
-    setQueryParams(prev => ({
+const debounceSerachInput = useMemo(() =>{
+  return debounce((value: string) =>{
+     setQueryParams(prev => ({
       ...prev,
-      ...filters,
+      q: value ?? "",
       currentPage: "1",
     }));
+  },600)
+},[])
+  const onFilterChange = (changedValues: UserFilterValues) => {
+    if(changedValues.q !== undefined){
+      debounceSerachInput(changedValues.q);
+    }else{
+      setQueryParams(prev => ({
+      ...prev,
+      role: changedValues.role ?? "",
+      currentPage: "1",
+    }));
+    }
   };
   return (
     <>
@@ -114,7 +122,7 @@ const Users = () => {
         </Flex>
         <Form
           form={filterForm}
-          onValuesChange={(_, allValues) => onFilterChange(allValues)}
+          onValuesChange={onFilterChange}
         >
           <UsersFilter>
             <Button

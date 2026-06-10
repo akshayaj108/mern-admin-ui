@@ -45,7 +45,7 @@ export type QueryData ={
   perPage: string
 }
 
-export type FieldData ={
-  q: string,
-  role?: string
-}
+export type UserFilterValues = {
+  q?: string;
+  role?: string;
+};
