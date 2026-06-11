@@ -27,7 +27,10 @@ export type CreateUser ={
   role: string,
   tenantId?: number
 }
-
+export type UpdateUserPayload = {
+  id: number;
+  data: User;
+};
 export type Tenant = {
   id: number,
   name: string,

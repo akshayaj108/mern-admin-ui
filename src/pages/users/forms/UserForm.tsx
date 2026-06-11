@@ -2,8 +2,11 @@ import { Card, Col, Input, Row, Select, Space, Form } from "antd";
 import useGetTenants from "../../../hooks/api/tenant/useGetTenant";
 import type { Tenant } from "../../../types";
 
-const UserForm = () => {
-  const { data: allRestaurnants } = useGetTenants();
+const UserForm = ({isEditing}: { isEditing: boolean}) => {
+   const { data: allRestaurnants } = useGetTenants({
+    currentPage: "1",
+    perPage: "500"
+  });
   return (
     <Row>
       <Col span={24}>
@@ -49,7 +52,8 @@ const UserForm = () => {
             </Col>
           </Row>
         </Card>
-        <Card title="Security Info">
+        {!isEditing&&(
+          <Card title="Security Info">
           <Row gutter={20}>
             <Col span={12}>
               <Form.Item label="Password" name="pass"
@@ -93,6 +97,7 @@ const UserForm = () => {
        
           </Row>
         </Card>
+        )}
         <Card title="Role Info">
           <Row gutter={20}>
             <Col span={12}>
@@ -124,10 +129,11 @@ const UserForm = () => {
                 // defaultValue="lucy"
                 allowClear
                 size="large"
+                
                 onChange={() => {}}
                 placeholder="Select a restaurants"
-                options={allRestaurnants?.map((resturant: Tenant) =>({
-                  value: resturant.id,
+                options={allRestaurnants?.data?.map((resturant: Tenant) =>({
+                  value: Number(resturant.id),
                   label: resturant.name
                 }))}
               />

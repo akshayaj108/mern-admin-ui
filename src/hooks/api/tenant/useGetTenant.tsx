@@ -4,7 +4,7 @@ import type { QueryData } from "../../../types";
 
 
 
-const useGetTenants = (query: QueryData) =>{
+const useGetTenants = (query?: QueryData) =>{
     return useQuery({
     queryKey: ["tenants", query],
     queryFn: () =>{

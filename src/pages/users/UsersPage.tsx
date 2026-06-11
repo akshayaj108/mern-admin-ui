@@ -16,12 +16,13 @@ import { PlusOutlined } from "@ant-design/icons";
 import { type UserFilterValues, type QueryData, type User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import useGetUsers from "../../hooks/api/users/useGetUsers";
 import useCreateUser from "../../hooks/api/users/useCreateUser";
 import { PER_PAGE } from "../../constants";
 import { debounce } from "lodash";
+import useUpdateUser from "../../hooks/api/users/useUpdateUser";
 
 const columns = [
   {
@@ -48,11 +49,7 @@ const columns = [
     title: "Restaurant",
     dataIndex: "tenant",
     key: "tenant",
-    render: (_text: string, record: User) => (
-      <div>
-        {record.tenant?.name}
-      </div>
-    ),
+    render: (_text: string, record: User) => <div>{record.tenant?.name}</div>,
   },
 ];
 
@@ -62,6 +59,7 @@ const Users = () => {
     currentPage: "1",
     perPage: String(PER_PAGE),
   });
+  const [selectedUserDetails, setSelectedDetails] = useState<User | null>(null);
 
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
@@ -69,6 +67,15 @@ const Users = () => {
     token: { colorBgLayout },
   } = theme.useToken();
 
+  useEffect(() => {
+    if (selectedUserDetails) {
+      setDrawerOpen(true);
+      form.setFieldsValue({
+        ...selectedUserDetails,
+        tenantId: Number(selectedUserDetails.tenant?.id),
+      });
+    }
+  }, [selectedUserDetails, form]);
   const { user } = useAuthStore();
 
   if (user?.role === "manager") {
@@ -76,32 +83,39 @@ const Users = () => {
   }
   const { data: users, isFetching, isError } = useGetUsers(queryParams);
   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
+  const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
+
+  const debounceSerachInput = useMemo(() => {
+    return debounce((value: string) => {
+      setQueryParams((prev) => ({
+        ...prev,
+        q: value ?? "",
+        currentPage: "1",
+      }));
+    }, 500);
+  }, []);
+  const onFilterChange = (changedValues: UserFilterValues) => {
+    if (changedValues.q !== undefined) {
+      debounceSerachInput(changedValues.q);
+    } else {
+      setQueryParams((prev) => ({
+        ...prev,
+        role: changedValues.role ?? "",
+        currentPage: "1",
+      }));
+    }
+  };
+
   const onHandleSubmit = async () => {
     await form.validateFields();
     const data = form.getFieldsValue();
-    await createUserMutate(data);
-    form.resetFields();
-    setDrawerOpen(false);
-  };
-const debounceSerachInput = useMemo(() =>{
-  return debounce((value: string) =>{
-     setQueryParams(prev => ({
-      ...prev,
-      q: value ?? "",
-      currentPage: "1",
-    }));
-  },500)
-},[])
-  const onFilterChange = (changedValues: UserFilterValues) => {
-    if(changedValues.q !== undefined){
-      debounceSerachInput(changedValues.q);
-    }else{
-      setQueryParams(prev => ({
-      ...prev,
-      role: changedValues.role ?? "",
-      currentPage: "1",
-    }));
+    const isEdit = !!selectedUserDetails;
+    if (isEdit) {
+      await updateUserMutate({ id: selectedUserDetails?.id, data });
+    } else {
+      await createUserMutate(data);
     }
+    setDrawerOpen(false);
   };
   return (
     <>
@@ -130,10 +144,7 @@ const debounceSerachInput = useMemo(() =>{
             </Typography.Text>
           )}
         </Flex>
-        <Form
-          form={filterForm}
-          onValuesChange={onFilterChange}
-        >
+        <Form form={filterForm} onValuesChange={onFilterChange}>
           <UsersFilter>
             <Button
               type="primary"
@@ -146,7 +157,17 @@ const debounceSerachInput = useMemo(() =>{
         </Form>
         <Table
           dataSource={users?.data}
-          columns={columns}
+          columns={[
+            ...columns,
+            {
+              title: "Actions",
+              render: (_: string, record: User) => (
+                <Button type="link" onClick={() => setSelectedDetails(record)}>
+                  Edit
+                </Button>
+              ),
+            },
+          ]}
           rowKey={"id"}
           loading={isFetching}
           pagination={{
@@ -162,32 +183,32 @@ const debounceSerachInput = useMemo(() =>{
                 };
               });
             },
-            showTotal: (total: number, range: number[]) =>{
-              return `Showing ${range[0]} - ${range[1]} of ${total} items`
-            }
+            showTotal: (total: number, range: number[]) => {
+              return `Showing ${range[0]} - ${range[1]} of ${total} items`;
+            },
           }}
         />
         ;
         <Drawer
-          title={"Create user"}
+          title={`${selectedUserDetails ? "Edit" : "Create"} user`}
           size={620}
           styles={{ body: { background: colorBgLayout } }}
           destroyOnHidden
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
+          afterOpenChange={(open) => {
+            if (!open) {
+              form.resetFields();
+              setSelectedDetails(null);
+            }
+          }}
           extra={
             <Space>
-              <Button
-                onClick={() => {
-                  form.resetFields();
-                  setDrawerOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
+              <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
               <Button
                 onClick={onHandleSubmit}
-                loading={isSubmitting}
+                loading={isSubmitting || isUpdating}
+                disabled={isSubmitting || isUpdating}
                 type="primary"
               >
                 Submit
@@ -196,7 +217,7 @@ const debounceSerachInput = useMemo(() =>{
           }
         >
           <Form form={form} layout="vertical">
-            <UserForm />
+            <UserForm isEditing={!!selectedUserDetails} />
           </Form>
         </Drawer>
       </Space>
