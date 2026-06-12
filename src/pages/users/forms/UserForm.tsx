@@ -3,6 +3,7 @@ import useGetTenants from "../../../hooks/api/tenant/useGetTenant";
 import type { Tenant } from "../../../types";
 
 const UserForm = ({isEditing}: { isEditing: boolean}) => {
+  const selectedRole = Form.useWatch('role') 
    const { data: allRestaurnants } = useGetTenants({
     currentPage: "1",
     perPage: "500"
@@ -123,7 +124,8 @@ const UserForm = ({isEditing}: { isEditing: boolean}) => {
               />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            {selectedRole === 'manager' &&(
+              <Col span={12}>
               <Form.Item label="Restaurants" name="tenantId">
                 <Select
                 // defaultValue="lucy"
@@ -139,6 +141,7 @@ const UserForm = ({isEditing}: { isEditing: boolean}) => {
               />
               </Form.Item>
             </Col>
+            )}
           </Row>
         </Card>
       </Space>
