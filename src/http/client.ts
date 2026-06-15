@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store";
+import { AUTH_SERVICE } from "./api";
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -9,7 +10,7 @@ export const api = axios.create({
         Accept: "application/json",
     },
 });
-const refreshToken = async () => await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,{}, { withCredentials: true });
+const refreshToken = async () => await axios.post(`${import.meta.env.VITE_BACKEND_URL}${AUTH_SERVICE}/auth/refresh`,{}, { withCredentials: true });
 api.interceptors.response.use(
     (response) => response,
     async (error) =>{
