@@ -30,6 +30,7 @@ import useGetCategories from "./hooks/useGetCategories";
 import useGetProducts from "./hooks/useGetProducts";
 import type { Product, ProductFilterValues } from "./types";
 import { format } from "date-fns";
+import ProductForm from "./form/ProductForm";
 
 const columns = [
   {
@@ -86,9 +87,9 @@ const Products = () => {
 
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
-  //   const {
-  //     token: { colorBgLayout },
-  //   } = theme.useToken();
+    const {
+      token: { colorBgLayout },
+    } = theme.useToken();
 
   useEffect(() => {
     // if (selectedUserDetails) {
@@ -128,17 +129,17 @@ const Products = () => {
     }
   };
 
-  //   const onHandleSubmit = async () => {
-  //     await form.validateFields();
-  //     const data = form.getFieldsValue();
-  //     const isEdit = !!selectedUserDetails;
-  //     if (isEdit) {
-  //       await updateUserMutate({ id: selectedUserDetails?.id, data });
-  //     } else {
-  //       await createUserMutate(data);
-  //     }
-  //     setDrawerOpen(false);
-  //   };
+    const onHandleSubmit = async () => {
+      await form.validateFields();
+      const data = form.getFieldsValue();
+      const isEdit = !!selectedUserDetails;
+      if (isEdit) {
+        // await updateUserMutate({ id: selectedUserDetails?.id, data });
+      } else {
+        // await createUserMutate(data);
+      }
+      setDrawerOpen(false);
+    };
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -215,9 +216,9 @@ const Products = () => {
             },
           }}
         />
-        ;
-        {/* <Drawer
-          title={`${selectedUserDetails ? "Edit" : "Create"} user`}
+        
+        <Drawer
+          title={`${selectedUserDetails ? "Edit" : "Create"} Product`}
           size={620}
           styles={{ body: { background: colorBgLayout } }}
           destroyOnHidden
@@ -234,8 +235,8 @@ const Products = () => {
               <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
               <Button
                 onClick={onHandleSubmit}
-                loading={isSubmitting || isUpdating}
-                disabled={isSubmitting || isUpdating}
+                // loading={isSubmitting || isUpdating}
+                // disabled={isSubmitting || isUpdating}
                 type="primary"
               >
                 Submit
@@ -243,10 +244,10 @@ const Products = () => {
             </Space>
           }
         >
-          <Form form={form} layout="vertical"> */}
-        {/* <UserForm isEditing={!!selectedUserDetails} /> */}
-        {/* </Form>
-        </Drawer> */}
+          <Form form={form} layout="vertical"> 
+        <ProductForm isEditing={!!selectedUserDetails} /> 
+         </Form>
+        </Drawer> 
       </Space>
     </>
   );

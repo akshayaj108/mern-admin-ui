@@ -16,6 +16,7 @@ export const updateUserApi = (data: User, id: number) => api.patch(`${AUTH_SERVI
 //catelog services
 
 export const getCategoryListApi = (queryString: string) => api.get(`${CATELOG_SERVICE}/categories?${queryString}`);
+export const getCategoryByIdApi = (id: string) => api.get(`${CATELOG_SERVICE}/categories/${id}`)
 
 //catelog products
 export const getProductstApi = (queryString: string) => api.get(`${CATELOG_SERVICE}/products?${queryString}`);

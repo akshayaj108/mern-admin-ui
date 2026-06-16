@@ -2,12 +2,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { QueryData } from "../../../types";
 import { AxiosError } from "axios";
 import { getCategories } from "./handler";
+import { toSearchString } from "../../../utils/helper";
 
 const useGetCategories = (query?: QueryData) => {
   return useQuery({
     queryKey: ["categories", query],
     queryFn: () => {
-      const queryString = new URLSearchParams(query).toString();
+      const queryString = toSearchString(query);
       return getCategories(queryString);
     },
     placeholderData: keepPreviousData,

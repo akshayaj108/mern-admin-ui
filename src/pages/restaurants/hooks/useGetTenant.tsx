@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getRestaurants } from "./tenant";
 import type { QueryData } from "../../../types";
+import { toSearchString } from "../../../utils/helper";
 
 
 
@@ -8,7 +9,7 @@ const useGetTenants = (query?: QueryData) =>{
     return useQuery({
     queryKey: ["tenants", query],
     queryFn: () =>{
-        const queryString = new URLSearchParams(query).toString();
+        const queryString = toSearchString(query);
         return getRestaurants(queryString)
     },
     placeholderData: keepPreviousData,
