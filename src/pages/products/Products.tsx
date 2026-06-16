@@ -4,9 +4,11 @@ import {
   Drawer,
   Flex,
   Form,
+  Image,
   Space,
   Spin,
   Table,
+  Tag,
   theme,
   Typography,
 } from "antd";
@@ -17,41 +19,60 @@ import { type UserFilterValues, type QueryData, type User } from "../../types";
 import { useAuthStore } from "../../store";
 import { useEffect, useMemo, useState } from "react";
 // import UserForm from "./forms/UserForm";
-import useGetUsers from "../../hooks/api/users/useGetUsers";
+import useGetUsers from "../users/hooks/useGetUsers";
 // import useCreateUser from "../../hooks/api/users/useCreateUser";
 import { PER_PAGE } from "../../constants";
 import { debounce } from "lodash";
 // import useUpdateUser from "../../hooks/api/users/useUpdateUser";
 import ProductFilter from "./ProductFilter";
+import useGetTenants from "../restaurants/hooks/useGetTenant";
+import useGetCategories from "./hooks/useGetCategories";
+import useGetProducts from "./hooks/useGetProducts";
+import type { Product } from "./types";
+import { format } from "date-fns";
 
-// const columns = [
-//   {
-//     title: "Name",
-//     dataIndex: "firstName",
-//     key: "firstName",
-//     render: (_text: string, record: User) => (
-//       <div>
-//         {record.firstName} {record.lastName}
-//       </div>
-//     ),
-//   },
-//   {
-//     title: "Email",
-//     dataIndex: "email",
-//     key: "email",
-//   },
-//   {
-//     title: "Role",
-//     dataIndex: "role",
-//     key: "role",
-//   },
-//   {
-//     title: "Restaurant",
-//     dataIndex: "tenant",
-//     key: "tenant",
-//     render: (_text: string, record: User) => <div>{record.tenant?.name}</div>,
-//   },
-// ];
+const columns = [
+  {
+    title: "Product Name",
+    dataIndex: "name",
+    key: "name",
+    render: (text: string, record: Product) => {
+      return (
+        <Space>
+          <Image width={60} src={record.image} />
+          <Typography.Text>{text}</Typography.Text>
+        </Space>
+      );
+    },
+  },
+  {
+    title: "Description",
+    dataIndex: "descriptions",
+    key: "descriptions",
+  },
+  {
+    title: "Status",
+    dataIndex: "isPublish",
+    key: "isPublish",
+     render: (status: boolean) => {
+      return (
+        <Space>
+          {status? <Tag color={"green"}>Published</Tag>: <Tag color={"purple"}>Draft</Tag>}
+        </Space>
+      );
+    },
+  },
+  {
+    title: "Created At",
+    dataIndex: "createdAt",
+    key: "createdAt",
+    render: (text: string) => (
+      <Typography.Text>
+        {format(new Date(text), "dd-mm-yyyy HH:MM")}
+      </Typography.Text>
+    ),
+  },
+];
 
 const Products = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -59,31 +80,35 @@ const Products = () => {
     currentPage: "1",
     perPage: String(PER_PAGE),
   });
-  const [selectedUserDetails, setSelectedDetails] = useState<User | null>(null);
+  const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(null);
 
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
-//   const {
-//     token: { colorBgLayout },
-//   } = theme.useToken();
+  //   const {
+  //     token: { colorBgLayout },
+  //   } = theme.useToken();
 
   useEffect(() => {
-    if (selectedUserDetails) {
-      setDrawerOpen(true);
-      form.setFieldsValue({
-        ...selectedUserDetails,
-        tenantId: Number(selectedUserDetails.tenant?.id),
-      });
-    }
+    // if (selectedUserDetails) {
+    //   setDrawerOpen(true);
+    //   form.setFieldsValue({
+    //     ...selectedUserDetails,
+    //     tenantId: Number(selectedUserDetails.tenant?.id),
+    //   });
+    // }
   }, [selectedUserDetails, form]);
   const { user } = useAuthStore();
 
   if (user?.role === "manager") {
     return <Navigate to={"/"} />;
   }
-  const { data: _users, isFetching, isError } = useGetUsers(queryParams);
-//   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
-//   const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
+  const { data: products, isFetching, isError } = useGetProducts(queryParams);
+  const { data: restaurants, isFetching: tenantFetching } = useGetTenants();
+  const { data: categories, isFetching: categoriesFetching } =
+    useGetCategories();
+  console.log("categories data", categories);
+  //   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
+  //   const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {
@@ -106,17 +131,17 @@ const Products = () => {
     }
   };
 
-//   const onHandleSubmit = async () => {
-//     await form.validateFields();
-//     const data = form.getFieldsValue();
-//     const isEdit = !!selectedUserDetails;
-//     if (isEdit) {
-//       await updateUserMutate({ id: selectedUserDetails?.id, data });
-//     } else {
-//       await createUserMutate(data);
-//     }
-//     setDrawerOpen(false);
-//   };
+  //   const onHandleSubmit = async () => {
+  //     await form.validateFields();
+  //     const data = form.getFieldsValue();
+  //     const isEdit = !!selectedUserDetails;
+  //     if (isEdit) {
+  //       await updateUserMutate({ id: selectedUserDetails?.id, data });
+  //     } else {
+  //       await createUserMutate(data);
+  //     }
+  //     setDrawerOpen(false);
+  //   };
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -140,12 +165,15 @@ const Products = () => {
           )}
           {isError && (
             <Typography.Text type="danger">
-              {"Something went wrong! failed to fetch users"}{" "}
+              {"Something went wrong! failed to fetch products"}{" "}
             </Typography.Text>
           )}
         </Flex>
         <Form form={filterForm} onValuesChange={onFilterChange}>
-          <ProductFilter>
+          <ProductFilter
+            restaurantList={restaurants?.data || []}
+            categories={categories || []}
+          >
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -155,13 +183,13 @@ const Products = () => {
             </Button>
           </ProductFilter>
         </Form>
-        {/* <Table
-          dataSource={users?.data}
+        <Table
+          dataSource={products?.data || []}
           columns={[
             ...columns,
             {
               title: "Actions",
-              render: (_: string, record: User) => (
+              render: (_: string, record: Product) => (
                 <Button type="link" onClick={() => setSelectedDetails(record)}>
                   Edit
                 </Button>
@@ -171,9 +199,9 @@ const Products = () => {
           rowKey={"id"}
           loading={isFetching}
           pagination={{
-            total: users?.total,
-            current: users?.currentPage,
-            pageSize: users?.perPage,
+            total: products?.total,
+            current: products?.currentPage,
+            pageSize: products?.perPage,
             onChange: (page, pageSize) => {
               setQueryParams((prevQueryParams) => {
                 return {
@@ -187,7 +215,7 @@ const Products = () => {
               return `Showing ${range[0]} - ${range[1]} of ${total} items`;
             },
           }}
-        /> */}
+        />
         ;
         {/* <Drawer
           title={`${selectedUserDetails ? "Edit" : "Create"} user`}
@@ -217,8 +245,8 @@ const Products = () => {
           }
         >
           <Form form={form} layout="vertical"> */}
-            {/* <UserForm isEditing={!!selectedUserDetails} /> */}
-          {/* </Form>
+        {/* <UserForm isEditing={!!selectedUserDetails} /> */}
+        {/* </Form>
         </Drawer> */}
       </Space>
     </>
@@ -226,7 +254,6 @@ const Products = () => {
 };
 
 export default Products;
-
 
 // const  = () => {
 //   return (

@@ -18,11 +18,11 @@ import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useEffect, useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
-import useGetUsers from "../../hooks/api/users/useGetUsers";
-import useCreateUser from "../../hooks/api/users/useCreateUser";
+import useGetUsers from "./hooks/useGetUsers";
+import useCreateUser from "./hooks/useCreateUser";
 import { PER_PAGE } from "../../constants";
 import { debounce } from "lodash";
-import useUpdateUser from "../../hooks/api/users/useUpdateUser";
+import useUpdateUser from "./hooks/useUpdateUser";
 
 const columns = [
   {

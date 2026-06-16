@@ -1,5 +1,5 @@
 import { Card, Col, Input, Row, Select, Space, Form } from "antd";
-import useGetTenants from "../../../hooks/api/tenant/useGetTenant";
+import useGetTenants from "../../restaurants/hooks/useGetTenant";
 import type { Tenant } from "../../../types";
 
 const UserForm = ({isEditing}: { isEditing: boolean}) => {
