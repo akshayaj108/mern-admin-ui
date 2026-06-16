@@ -75,10 +75,12 @@ const columns = [
 ];
 
 const Products = () => {
+   const { user } = useAuthStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [queryParams, setQueryParams] = useState<QueryData>({
     page: "1",
     limit: String(1),
+    tenantId: user?.role === "manager"? user.tenant?.id: undefined
   });
   const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(null);
 
@@ -97,18 +99,11 @@ const Products = () => {
     //   });
     // }
   }, [selectedUserDetails, form]);
-  const { user } = useAuthStore();
 
-  if (user?.role === "manager") {
-    return <Navigate to={"/"} />;
-  }
   const { data: products, isFetching, isError } = useGetProducts(queryParams);
   const { data: restaurants, isFetching: tenantFetching } = useGetTenants();
   const { data: categories, isFetching: categoriesFetching } =
     useGetCategories();
-
-  //   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
-  //   const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {

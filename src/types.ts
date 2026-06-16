@@ -55,6 +55,7 @@ export type QueryData ={
   perPage?: string,
   page?: string,
   limit?: string
+  tenantId?: string | number
 }
 
 export type UserFilterValues = {

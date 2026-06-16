@@ -11,6 +11,7 @@
   } from "antd";
   import type { Tenant } from "../../types";
   import type { Category } from "./types";
+import { useAuthStore } from "../../store";
 
   type FilterProps = {
     restaurantList: Tenant[];
@@ -22,6 +23,7 @@
     categories,
     restaurantList,
   }: FilterProps) => {
+    const { user } = useAuthStore();
     return (
       <Card>
         <Row justify={"space-between"} align={"middle"}>
@@ -48,7 +50,8 @@
                 </Form.Item>
               </Col>
 
-              <Col span={6}>
+              {user?.role === 'admin' && (
+                <Col span={6}>
                 <Form.Item name="tenantId">
                   <Select
                     // defaultValue="Active"
@@ -62,6 +65,7 @@
                   />
                 </Form.Item>
               </Col>
+              )}
               <Col span={6}>
             <Space>
     <Form.Item
