@@ -22,3 +22,10 @@ export type ProductResponse ={
   perPage: number,
   total: number
 }
+
+export type ProductFilterValues = {
+  q?: string;
+  categoryId?: string;
+  tenantId?: string;
+  isPublish?: boolean;
+};

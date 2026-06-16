@@ -51,8 +51,10 @@ export type CreateTenantData = {
 }
 
 export type QueryData ={
-  currentPage: string,
-  perPage: string
+  currentPage?: string,
+  perPage?: string,
+  page?: string,
+  limit?: string
 }
 
 export type UserFilterValues = {

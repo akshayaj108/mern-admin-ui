@@ -28,7 +28,7 @@ import ProductFilter from "./ProductFilter";
 import useGetTenants from "../restaurants/hooks/useGetTenant";
 import useGetCategories from "./hooks/useGetCategories";
 import useGetProducts from "./hooks/useGetProducts";
-import type { Product } from "./types";
+import type { Product, ProductFilterValues } from "./types";
 import { format } from "date-fns";
 
 const columns = [
@@ -77,8 +77,8 @@ const columns = [
 const Products = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [queryParams, setQueryParams] = useState<QueryData>({
-    currentPage: "1",
-    perPage: String(PER_PAGE),
+    page: "1",
+    limit: String(1),
   });
   const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(null);
 
@@ -106,7 +106,7 @@ const Products = () => {
   const { data: restaurants, isFetching: tenantFetching } = useGetTenants();
   const { data: categories, isFetching: categoriesFetching } =
     useGetCategories();
-  console.log("categories data", categories);
+
   //   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
   //   const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
 
@@ -115,18 +115,20 @@ const Products = () => {
       setQueryParams((prev) => ({
         ...prev,
         q: value ?? "",
-        currentPage: "1",
+        page: "1",
       }));
     }, 500);
   }, []);
-  const onFilterChange = (changedValues: UserFilterValues) => {
+  const onFilterChange = (changedValues: ProductFilterValues) => {
+   
     if (changedValues.q !== undefined) {
       debounceSerachInput(changedValues.q);
     } else {
+
       setQueryParams((prev) => ({
         ...prev,
-        role: changedValues.role ?? "",
-        currentPage: "1",
+        ...changedValues,
+        page: "1",
       }));
     }
   };
@@ -169,7 +171,9 @@ const Products = () => {
             </Typography.Text>
           )}
         </Flex>
-        <Form form={filterForm} onValuesChange={onFilterChange}>
+        <Form form={filterForm}  initialValues={{
+    isPublish: false,
+  }} onValuesChange={onFilterChange}>
           <ProductFilter
             restaurantList={restaurants?.data || []}
             categories={categories || []}
@@ -196,7 +200,7 @@ const Products = () => {
               ),
             },
           ]}
-          rowKey={"id"}
+          rowKey={"_id"}
           loading={isFetching}
           pagination={{
             total: products?.total,
@@ -206,8 +210,8 @@ const Products = () => {
               setQueryParams((prevQueryParams) => {
                 return {
                   ...prevQueryParams,
-                  currentPage: page.toString(),
-                  perPage: pageSize.toString(),
+                  page: page.toString(),
+                  limit: pageSize.toString(),
                 };
               });
             },
