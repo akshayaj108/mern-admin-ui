@@ -79,8 +79,8 @@ const Products = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [queryParams, setQueryParams] = useState<QueryData>({
     page: "1",
-    limit: String(1),
-    tenantId: user?.role === "manager"? user.tenant?.id: undefined
+    limit: String(PER_PAGE),
+    tenantId: user?.role === "manager"? user.tenant?.id: ''
   });
   const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(null);
 
