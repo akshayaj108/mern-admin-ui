@@ -1,6 +1,6 @@
-import type { QueryData } from "../types";
+import type { ProductQueryData, QueryData } from "../types";
 
-export const toSearchString = (query?: QueryData) =>
+export const toSearchString = (query?: QueryData | ProductQueryData) =>
   new URLSearchParams(
         Object.entries(query ?? {}).reduce<Record<string, string>>((params, [key, value]) => {
           if (value !== undefined && value !== null) {

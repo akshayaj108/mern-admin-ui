@@ -27,7 +27,7 @@ import useGetProducts from "./hooks/useGetProducts";
 import type { Product, ProductFilterValues } from "./types";
 import { format } from "date-fns";
 import ProductForm from "./form/ProductForm";
-import type { QueryData } from "../../types";
+import type { ProductQueryData, QueryData } from "../../types";
 import { makeMultiParForm } from "./helpers";
 import { useAddProduct } from "./hooks/useAddProduct";
 
@@ -81,7 +81,7 @@ const columns = [
 const Products = () => {
   const { user } = useAuthStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [queryParams, setQueryParams] = useState<QueryData>({
+  const [queryParams, setQueryParams] = useState<ProductQueryData>({
     page: "1",
     limit: String(PER_PAGE),
     tenantId: user?.role === "manager" ? user.tenant?.id : "",
@@ -115,9 +115,11 @@ const Products = () => {
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {
-      setQueryParams((prev: QueryData) => ({
+      setQueryParams((prev: ProductQueryData) => ({
         ...prev,
         q: value ?? "",
+        categoryId: value ?? "",
+        tenantId: value ?? "",
         page: "1",
       }));
     }, 500);
@@ -156,12 +158,17 @@ const priceConfigurationFormValue = form.getFieldValue('priceConfiguration');
       }
      }
     },{});
+    const antDFormImage = form.getFieldValue('image');
+    const image = antDFormImage[0].originFileObj;
+
     const formData = {
       ...form.getFieldsValue(),
+      image,
       isPublish: form.getFieldValue('isPublish') ? true: false,
       priceConfiguration,
       attributes
     }
+
     const payload = makeMultiParForm(formData)
     
     const isEdit = !!selectedUserDetails;

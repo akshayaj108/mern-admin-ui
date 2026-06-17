@@ -1,13 +1,14 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import type { QueryData } from "../../../types";
+import type { ProductQueryData } from "../../../types";
 import { AxiosError } from "axios";
 import { getProducts } from "./handler";
+import { toSearchString } from "../../../utils/helper";
 
-const useGetProducts = (query?: QueryData) => {
+const useGetProducts = (query?: ProductQueryData) => {
   return useQuery({
     queryKey: ["products", query],
     queryFn: () => {
-      const queryString = new URLSearchParams(query).toString();
+      const queryString = toSearchString(query)
       return getProducts(queryString);
     },
     placeholderData: keepPreviousData,
