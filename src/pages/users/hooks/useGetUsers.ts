@@ -2,12 +2,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getUsers } from "./users";
 import type { QueryData } from "../../../types";
 import { AxiosError } from "axios";
+import { toSearchString } from "../../../utils/helper";
 
 const useGetUsers = (query: QueryData) => {
   return useQuery({
     queryKey: ["users", query],
     queryFn: () => {
-      const queryString = new URLSearchParams(query).toString();
+      const queryString = toSearchString(query);
       return getUsers(queryString);
     },
     placeholderData: keepPreviousData,

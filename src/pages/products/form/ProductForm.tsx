@@ -18,7 +18,6 @@ import type { Category } from "../types";
 import { useState } from "react";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import type { GetProp, UploadFile, UploadProps } from "antd";
-import Price from "./Price";
 import Attributes from "./Attributes";
 import { useGetCategory } from "../hooks/useGetCatory";
 import PriceConfiguration from "./Price";
@@ -34,20 +33,22 @@ const getBase64 = (file: FileType, p0?: (url: any) => void): Promise<string> =>
   });
 
 const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
+  const form = Form.useFormInstance();
   const selectedCategory = Form.useWatch("categoryId");
   const { data: allRestaurnants } = useGetTenants();
   const { data: categories } = useGetCategories();
-  const { data: categoryDetails } = useGetCategory(selectedCategory)
-
+  const { data: categoryDetails } = useGetCategory(selectedCategory);
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
-  
-
   const handleChange: UploadProps["onChange"] = ({ fileList }) => {
-    setFileList(fileList.slice(-1)); // only one image
+    const latestFileList = fileList.slice(-1);
+
+    setFileList(latestFileList);
+    const imageFile = latestFileList[0].originFileObj;
+   form.setFieldValue("image", imageFile);
   };
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
@@ -59,7 +60,7 @@ const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
   };
   const uploadButton = (
     <button style={{ border: 0, background: "none" }} type="button">
-      { <PlusOutlined />}
+      {<PlusOutlined />}
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
@@ -139,15 +140,17 @@ const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
           <Card title="Product image">
             <Row gutter={20}>
               <Col span={12}>
-                {/* <Form.Item
+                <Form.Item
                   label="Upload image"
-                  name="image"
+                  name={"image"}
+                  valuePropName="fileList"
+                  getValueFromEvent={(e) => e?.fileList}
                   rules={[
                     {
                       required: true,
                     },
                   ]}
-                > */}
+                >
                   <Upload
                     listType="picture-card"
                     fileList={fileList}
@@ -170,11 +173,11 @@ const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
                       src={previewImage}
                     />
                   )}
-                {/* </Form.Item> */}
+                </Form.Item>
               </Col>
             </Row>
           </Card>
-                
+
           <Card title="Tenant Info">
             <Row gutter={20}>
               {true && (
@@ -200,22 +203,28 @@ const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
           </Card>
           {selectedCategory && (
             <>
-                <PriceConfiguration category={categoryDetails?.data} />
-                <Attributes category={categoryDetails?.data} />
+              <PriceConfiguration category={categoryDetails?.data} />
+              <Attributes category={categoryDetails?.data} />
             </>
           )}
           <Card title="Other properties">
             <Row gutter={20}>
-                <Col span={24}>
-                  <Space>
-                    <Form.Item name="isPublish">
-                    <Switch defaultChecked={false} checkedChildren="Yes" unCheckedChildren="No" />
+              <Col span={24}>
+                <Space>
+                  <Form.Item name="isPublish">
+                    <Switch
+                      defaultChecked={false}
+                      checkedChildren="Yes"
+                      unCheckedChildren="No"
+                    />
                   </Form.Item>
-                  <Typography.Text style={{ marginBottom: 20, display: "block"}}>
+                  <Typography.Text
+                    style={{ marginBottom: 20, display: "block" }}
+                  >
                     Published
                   </Typography.Text>
-                  </Space>
-                </Col>
+                </Space>
+              </Col>
             </Row>
           </Card>
         </Space>

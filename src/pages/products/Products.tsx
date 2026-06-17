@@ -13,17 +13,13 @@ import {
   Typography,
 } from "antd";
 import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { PlusOutlined } from "@ant-design/icons";
-import { type UserFilterValues, type QueryData, type User } from "../../types";
+
 import { useAuthStore } from "../../store";
 import { useEffect, useMemo, useState } from "react";
-// import UserForm from "./forms/UserForm";
-import useGetUsers from "../users/hooks/useGetUsers";
-// import useCreateUser from "../../hooks/api/users/useCreateUser";
 import { PER_PAGE } from "../../constants";
 import { debounce } from "lodash";
-// import useUpdateUser from "../../hooks/api/users/useUpdateUser";
 import ProductFilter from "./ProductFilter";
 import useGetTenants from "../restaurants/hooks/useGetTenant";
 import useGetCategories from "./hooks/useGetCategories";
@@ -31,6 +27,9 @@ import useGetProducts from "./hooks/useGetProducts";
 import type { Product, ProductFilterValues } from "./types";
 import { format } from "date-fns";
 import ProductForm from "./form/ProductForm";
+import type { QueryData } from "../../types";
+import { makeMultiParForm } from "./helpers";
+import { useAddProduct } from "./hooks/useAddProduct";
 
 const columns = [
   {
@@ -55,10 +54,14 @@ const columns = [
     title: "Status",
     dataIndex: "isPublish",
     key: "isPublish",
-     render: (status: boolean) => {
+    render: (status: boolean) => {
       return (
         <Space>
-          {status? <Tag color={"green"}>Published</Tag>: <Tag color={"purple"}>Draft</Tag>}
+          {status ? (
+            <Tag color={"green"}>Published</Tag>
+          ) : (
+            <Tag color={"purple"}>Draft</Tag>
+          )}
         </Space>
       );
     },
@@ -76,20 +79,22 @@ const columns = [
 ];
 
 const Products = () => {
-   const { user } = useAuthStore();
+  const { user } = useAuthStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [queryParams, setQueryParams] = useState<QueryData>({
     page: "1",
     limit: String(PER_PAGE),
-    tenantId: user?.role === "manager"? user.tenant?.id: ''
+    tenantId: user?.role === "manager" ? user.tenant?.id : "",
   });
-  const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(null);
+  const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(
+    null,
+  );
 
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
-    const {
-      token: { colorBgLayout },
-    } = theme.useToken();
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
 
   useEffect(() => {
     // if (selectedUserDetails) {
@@ -102,13 +107,15 @@ const Products = () => {
   }, [selectedUserDetails, form]);
 
   const { data: products, isFetching, isError } = useGetProducts(queryParams);
-  const { data: restaurants, isFetching: tenantFetching } = useGetTenants();
-  const { data: categories, isFetching: categoriesFetching } =
-    useGetCategories();
+  const { data: restaurants } = useGetTenants();
+  const { data: categories } = useGetCategories();
+  
+  //mutation
+  const { mutate: addProductMutation, isPending: isSubmitting} = useAddProduct();
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {
-      setQueryParams((prev) => ({
+      setQueryParams((prev: QueryData) => ({
         ...prev,
         q: value ?? "",
         page: "1",
@@ -116,11 +123,9 @@ const Products = () => {
     }, 500);
   }, []);
   const onFilterChange = (changedValues: ProductFilterValues) => {
-   
     if (changedValues.q !== undefined) {
       debounceSerachInput(changedValues.q);
     } else {
-
       setQueryParams((prev) => ({
         ...prev,
         ...changedValues,
@@ -129,17 +134,45 @@ const Products = () => {
     }
   };
 
-    const onHandleSubmit = async () => {
-      await form.validateFields();
-      const data = form.getFieldsValue();
-      const isEdit = !!selectedUserDetails;
-      if (isEdit) {
-        // await updateUserMutate({ id: selectedUserDetails?.id, data });
-      } else {
-        // await createUserMutate(data);
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    const data = form.getFieldsValue();
+
+const attrFormValue = form.getFieldValue('attributes');
+const attributes = Object.entries(attrFormValue).map(([key, value]) => ({
+  name: key,
+  value: value
+}))
+const priceConfigurationFormValue = form.getFieldValue('priceConfiguration');
+
+    
+    const priceConfiguration = Object.entries(priceConfigurationFormValue).reduce((acc, [key, value]) =>{
+     const parsedKey = JSON.parse(key);
+     return{
+      ...acc,
+      [parsedKey.configurationKey]: {
+        priceType: parsedKey.priceType,
+        avalableOptions: value
       }
-      setDrawerOpen(false);
-    };
+     }
+    },{});
+    const formData = {
+      ...form.getFieldsValue(),
+      isPublish: form.getFieldValue('isPublish') ? true: false,
+      priceConfiguration,
+      attributes
+    }
+    const payload = makeMultiParForm(formData)
+    
+    const isEdit = !!selectedUserDetails;
+    if (isEdit) {
+      // await updateUserMutate({ id: selectedUserDetails?.id, data });
+    } else {
+      await addProductMutation(payload);
+    }
+    form.resetFields()
+    setDrawerOpen(false);
+  };
   return (
     <>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
@@ -167,9 +200,13 @@ const Products = () => {
             </Typography.Text>
           )}
         </Flex>
-        <Form form={filterForm}  initialValues={{
-    isPublish: false,
-  }} onValuesChange={onFilterChange}>
+        <Form
+          form={filterForm}
+          initialValues={{
+            isPublish: false,
+          }}
+          onValuesChange={onFilterChange}
+        >
           <ProductFilter
             restaurantList={restaurants?.data || []}
             categories={categories || []}
@@ -216,7 +253,7 @@ const Products = () => {
             },
           }}
         />
-        
+
         <Drawer
           title={`${selectedUserDetails ? "Edit" : "Create"} Product`}
           size={620}
@@ -235,8 +272,8 @@ const Products = () => {
               <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
               <Button
                 onClick={onHandleSubmit}
-                // loading={isSubmitting || isUpdating}
-                // disabled={isSubmitting || isUpdating}
+                loading={isSubmitting}
+                disabled={isSubmitting}
                 type="primary"
               >
                 Submit
@@ -244,21 +281,13 @@ const Products = () => {
             </Space>
           }
         >
-          <Form form={form} layout="vertical"> 
-        <ProductForm isEditing={!!selectedUserDetails} /> 
-         </Form>
-        </Drawer> 
+          <Form form={form} layout="vertical">
+            <ProductForm isEditing={!!selectedUserDetails} />
+          </Form>
+        </Drawer>
       </Space>
     </>
   );
 };
 
 export default Products;
-
-// const  = () => {
-//   return (
-//     <div>Products</div>
-//   )
-// }
-
-// export default Products

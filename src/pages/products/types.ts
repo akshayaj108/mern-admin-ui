@@ -27,6 +27,12 @@ export type Product = {
     status: boolean;
     createdAt: string;
 }
+export type ProductImage = {
+ file: File
+};
+export type CreateProduct = Product &  {
+  image: File;
+};
 
 export type CategoryResponse ={
   data: Category[],

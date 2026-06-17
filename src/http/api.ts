@@ -20,3 +20,8 @@ export const getCategoryByIdApi = (id: string) => api.get(`${CATELOG_SERVICE}/ca
 
 //catelog products
 export const getProductstApi = (queryString: string) => api.get(`${CATELOG_SERVICE}/products?${queryString}`);
+export const addProductApi = (data: FormData) => api.post(`${CATELOG_SERVICE}/products`, data,{
+    headers: {
+        'Content-Type': 'multipart/form-data'
+    }
+})
