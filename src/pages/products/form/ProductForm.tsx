@@ -21,7 +21,8 @@
   import Attributes from "./Attributes";
   import { useGetCategory } from "../hooks/useGetCatory";
   import PriceConfiguration from "./Price";
-import ProductImageUpload from "./ProductImageUpload";
+  import ProductImageUpload from "./ProductImageUpload";
+import { useAuthStore } from "../../../store";
 
   type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -34,6 +35,7 @@ import ProductImageUpload from "./ProductImageUpload";
     });
 
   const ProductForm = ({ isEditing }: { isEditing: boolean }) => {
+    const { user } = useAuthStore();
     const form = Form.useFormInstance();
     const selectedCategory = Form.useWatch("categoryId");
     const { data: allRestaurnants } = useGetTenants();
@@ -145,8 +147,9 @@ import ProductImageUpload from "./ProductImageUpload";
                 </Col>
               </Row>
             </Card>
-
-            <Card title="Tenant Info">
+            
+            {user?.role === 'admin' && (
+               <Card title="Tenant Info">
               <Row gutter={20}>
                 {true && (
                   <Col span={24}>
@@ -169,6 +172,7 @@ import ProductImageUpload from "./ProductImageUpload";
                 )}
               </Row>
             </Card>
+            )}
             {selectedCategory && (
               <>
                 <PriceConfiguration category={categoryDetails?.data} />

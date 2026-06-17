@@ -27,7 +27,7 @@ import useGetProducts from "./hooks/useGetProducts";
 import type { Product, ProductFilterValues } from "./types";
 import { format } from "date-fns";
 import ProductForm from "./form/ProductForm";
-import type { ProductQueryData, QueryData } from "../../types";
+import type { ProductQueryData } from "../../types";
 import { makeMultiParForm } from "./helpers";
 import { useAddProduct } from "./hooks/useAddProduct";
 
@@ -72,7 +72,7 @@ const columns = [
     key: "createdAt",
     render: (text: string) => (
       <Typography.Text>
-        {format(new Date(text), "dd-mm-yyyy HH:MM")}
+        {format(new Date(text), "dd-mm-yyyy HH:mm")}
       </Typography.Text>
     ),
   },
@@ -111,7 +111,8 @@ const Products = () => {
   const { data: categories } = useGetCategories();
   
   //mutation
-  const { mutate: addProductMutation, isPending: isSubmitting} = useAddProduct();
+  const { mutateAsync: addProductMutation, isPending: isSubmitting } =
+    useAddProduct();
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {
@@ -124,6 +125,7 @@ const Products = () => {
       }));
     }, 500);
   }, []);
+
   const onFilterChange = (changedValues: ProductFilterValues) => {
     if (changedValues.q !== undefined) {
       debounceSerachInput(changedValues.q);
@@ -140,45 +142,53 @@ const Products = () => {
     await form.validateFields();
     const data = form.getFieldsValue();
 
-const attrFormValue = form.getFieldValue('attributes');
-const attributes = Object.entries(attrFormValue).map(([key, value]) => ({
-  name: key,
-  value: value
-}))
-const priceConfigurationFormValue = form.getFieldValue('priceConfiguration');
+    const attrFormValue = form.getFieldValue("attributes");
+    const attributes = Object.entries(attrFormValue).map(([key, value]) => ({
+      name: key,
+      value: value,
+    }));
+    const priceConfigurationFormValue =
+      form.getFieldValue("priceConfiguration");
 
-    
-    const priceConfiguration = Object.entries(priceConfigurationFormValue).reduce((acc, [key, value]) =>{
-     const parsedKey = JSON.parse(key);
-     return{
-      ...acc,
-      [parsedKey.configurationKey]: {
-        priceType: parsedKey.priceType,
-        avalableOptions: value
-      }
-     }
-    },{});
-    const antDFormImage = form.getFieldValue('image');
+    const priceConfiguration = Object.entries(
+      priceConfigurationFormValue,
+    ).reduce((acc, [key, value]) => {
+      const parsedKey = JSON.parse(key);
+      return {
+        ...acc,
+        [parsedKey.configurationKey]: {
+          priceType: parsedKey.priceType,
+          avalableOptions: value,
+        },
+      };
+    }, {});
+    const antDFormImage = form.getFieldValue("image");
     const image = antDFormImage[0].originFileObj;
-
+    const tenantId = user?.role === "admin" ? data.tenantId : user?.tenant?.id;
     const formData = {
-      ...form.getFieldsValue(),
+      ...data,
       image,
-      isPublish: form.getFieldValue('isPublish') ? true: false,
+      tenantId,
+      isPublish: form.getFieldValue("isPublish") ? true : false,
       priceConfiguration,
-      attributes
-    }
+      attributes,
+    };
 
-    const payload = makeMultiParForm(formData)
-    
+    const payload = makeMultiParForm(formData);
+
     const isEdit = !!selectedUserDetails;
-    if (isEdit) {
-      // await updateUserMutate({ id: selectedUserDetails?.id, data });
-    } else {
-      await addProductMutation(payload);
+
+    try {
+      if (isEdit) {
+        // await updateUserMutate({ id: selectedUserDetails?.id, data });
+      } else {
+        await addProductMutation(payload);
+      }
+      form.resetFields();
+      setDrawerOpen(false);
+    } catch (error: any) {
+      console.error(error?.response?.data?.message || "Failed to add product");
     }
-    form.resetFields()
-    setDrawerOpen(false);
   };
   return (
     <>
