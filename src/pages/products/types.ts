@@ -17,11 +17,17 @@ export interface Category {
   attributes: Attributes[];
 }
 
+export type ProductAttributes = {
+  name: string;
+  value: string | boolean;
+}
 
 export type Product = {
     _id?: string;
     image: string;
     name: string;
+    priceConfiguration: PriceConfiguration;
+    attributes: ProductAttributes[];
     description: string;
     category: string;
     status: boolean;
@@ -33,6 +39,11 @@ export type ProductImage = {
 export type CreateProduct = Product &  {
   image: File;
 };
+
+export type UpdateProductPayload ={
+  id: string,
+  data: FormData
+} 
 
 export type CategoryResponse ={
   data: Category[],

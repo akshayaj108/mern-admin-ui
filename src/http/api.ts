@@ -24,4 +24,9 @@ export const addProductApi = (data: FormData) => api.post(`${CATELOG_SERVICE}/pr
     headers: {
         'Content-Type': 'multipart/form-data'
     }
+});
+export const updateProductApi = (data: FormData, id: string) => api.put(`${CATELOG_SERVICE}/products/${id}`, data,{
+    headers: {
+        'Content-Type': 'multipart/form-data'
+    }
 })

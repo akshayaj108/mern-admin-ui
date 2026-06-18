@@ -1,4 +1,4 @@
-import { addProductApi, getCategoryListApi, getProductstApi } from "../../../http/api";
+import { addProductApi, getCategoryListApi, getProductstApi, updateProductApi } from "../../../http/api";
 import type { ProductResponse } from "../types";
 
 export const getCategories = async (query: string): Promise<void> => {
@@ -15,3 +15,8 @@ export const addProduct = async (data: FormData) =>{
     const response = await addProductApi(data);
     return response.data;
 }
+export const updateProduct = async (data: FormData, id: string) =>{
+    const response = await updateProductApi(data, id);
+    return response.data;
+}
+

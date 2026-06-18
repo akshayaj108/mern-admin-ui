@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { getCategoryByIdApi } from "../../../http/api"
 
 export const useGetCategory = (id?: string) =>{
@@ -9,6 +9,7 @@ export const useGetCategory = (id?: string) =>{
         },
         enabled: !!id,
          // staleTime: Infinity, // never becomes stale
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: false, // don't refetch when switching tabs
     refetchOnReconnect: false, // don't refetch on internet reconnect
     refetchOnMount: false,

@@ -3,6 +3,7 @@ import {
   Image,
   Space,
   Upload,
+
   type GetProp,
   type UploadFile,
   type UploadProps,
@@ -10,7 +11,7 @@ import {
 import { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 
-export type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
+type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
 export const getBase64 = (file: FileType): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -22,15 +23,14 @@ export const getBase64 = (file: FileType): Promise<string> =>
 
   
 const ProductImageUpload = () => {
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const form = Form.useFormInstance();
+
+  const fileList = Form.useWatch("image", form) || [];
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
-  const handleChange: UploadProps["onChange"] = ({ fileList }) => {
-    const latestFileList = fileList.slice(-1);
 
-    setFileList(latestFileList);
-  };
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as FileType);
@@ -51,7 +51,7 @@ const ProductImageUpload = () => {
         label="Upload image"
         name={"image"}
         valuePropName="fileList"
-        getValueFromEvent={(e) => e?.fileList}
+        getValueFromEvent={(e) => e?.fileList?.slice(-1)}
         rules={[
           {
             required: true,
@@ -63,7 +63,6 @@ const ProductImageUpload = () => {
           fileList={fileList}
           beforeUpload={() => false}
           onPreview={handlePreview}
-          onChange={handleChange}
           maxCount={1}
         >
           {fileList?.length >= 1 ? null : uploadButton}

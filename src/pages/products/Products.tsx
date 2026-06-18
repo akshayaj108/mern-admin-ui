@@ -30,6 +30,7 @@ import ProductForm from "./form/ProductForm";
 import type { ProductQueryData } from "../../types";
 import { makeMultiParForm } from "./helpers";
 import { useAddProduct } from "./hooks/useAddProduct";
+import { useUpdateProduct } from "./hooks/useUpdateProduct";
 
 const columns = [
   {
@@ -86,9 +87,7 @@ const Products = () => {
     limit: String(PER_PAGE),
     tenantId: user?.role === "manager" ? user.tenant?.id : "",
   });
-  const [selectedUserDetails, setSelectedDetails] = useState<Product | null>(
-    null,
-  );
+  const [selectedDetails, setSelectedDetails] = useState<Product | null>(null);
 
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
@@ -97,22 +96,54 @@ const Products = () => {
   } = theme.useToken();
 
   useEffect(() => {
-    // if (selectedUserDetails) {
-    //   setDrawerOpen(true);
-    //   form.setFieldsValue({
-    //     ...selectedUserDetails,
-    //     tenantId: Number(selectedUserDetails.tenant?.id),
-    //   });
-    // }
-  }, [selectedUserDetails, form]);
+    if (selectedDetails) {
+      setDrawerOpen(true);
+     
+      //transform from server data to formdata
+      const priceConfiguration = Object.entries(
+        selectedDetails.priceConfiguration,
+      ).reduce((acc, [key, value]) => {
+        const stringiFyKey = JSON.stringify({
+          configurationKey: key,
+          priceType: value.priceType,
+        });
+        return {
+          ...acc,
+          [stringiFyKey]: value.availableOptions,
+        };
+      }, {});
+
+      const attributes = selectedDetails.attributes.reduce((acc, item) => {
+        return {
+          ...acc,
+          [item.name]: item.value,
+        };
+      }, {});
+      const image = [
+        {
+          uid: "-1",
+          name: "product-image",
+          status: "done",
+          url: selectedDetails.image,
+        },
+      ];
+      form.setFieldsValue({
+        ...selectedDetails,
+        image: image,
+        priceConfiguration,
+        attributes,
+      });
+    }
+  }, [selectedDetails, form]);
 
   const { data: products, isFetching, isError } = useGetProducts(queryParams);
   const { data: restaurants } = useGetTenants();
   const { data: categories } = useGetCategories();
-  
+
   //mutation
   const { mutateAsync: addProductMutation, isPending: isSubmitting } =
     useAddProduct();
+  const { mutateAsync: updateProductMutation, isPending: isUpdating } = useUpdateProduct();
 
   const debounceSerachInput = useMemo(() => {
     return debounce((value: string) => {
@@ -137,7 +168,11 @@ const Products = () => {
       }));
     }
   };
-
+  const onHandleClose = () =>{
+    form.resetFields();
+    setSelectedDetails(null)
+    setDrawerOpen(false)
+  }
   const onHandleSubmit = async () => {
     await form.validateFields();
     const data = form.getFieldsValue();
@@ -147,8 +182,7 @@ const Products = () => {
       name: key,
       value: value,
     }));
-    const priceConfigurationFormValue =
-      form.getFieldValue("priceConfiguration");
+    const priceConfigurationFormValue = form.getFieldValue("priceConfiguration");
 
     const priceConfiguration = Object.entries(
       priceConfigurationFormValue,
@@ -158,7 +192,7 @@ const Products = () => {
         ...acc,
         [parsedKey.configurationKey]: {
           priceType: parsedKey.priceType,
-          avalableOptions: value,
+          availableOptions: value,
         },
       };
     }, {});
@@ -176,18 +210,18 @@ const Products = () => {
 
     const payload = makeMultiParForm(formData);
 
-    const isEdit = !!selectedUserDetails;
+    const isEdit = !!selectedDetails;
 
     try {
       if (isEdit) {
-        // await updateUserMutate({ id: selectedUserDetails?.id, data });
+        await updateProductMutation({ data: payload, id: selectedDetails?._id!})
       } else {
         await addProductMutation(payload);
       }
-      form.resetFields();
-      setDrawerOpen(false);
     } catch (error: any) {
       console.error(error?.response?.data?.message || "Failed to add product");
+    }finally{
+      onHandleClose();
     }
   };
   return (
@@ -272,12 +306,12 @@ const Products = () => {
         />
 
         <Drawer
-          title={`${selectedUserDetails ? "Edit" : "Create"} Product`}
+          title={`${selectedDetails ? "Edit" : "Add"} Product`}
           size={620}
           styles={{ body: { background: colorBgLayout } }}
           destroyOnHidden
           open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          onClose={onHandleClose}
           afterOpenChange={(open) => {
             if (!open) {
               form.resetFields();
@@ -286,11 +320,10 @@ const Products = () => {
           }}
           extra={
             <Space>
-              <Button onClick={() => setDrawerOpen(false)}>Cancel</Button>
+              <Button onClick={onHandleClose}>Cancel</Button>
               <Button
                 onClick={onHandleSubmit}
-                loading={isSubmitting}
-                disabled={isSubmitting}
+                loading={isSubmitting || isUpdating}
                 type="primary"
               >
                 Submit
@@ -299,7 +332,7 @@ const Products = () => {
           }
         >
           <Form form={form} layout="vertical">
-            <ProductForm isEditing={!!selectedUserDetails} />
+            <ProductForm />
           </Form>
         </Drawer>
       </Space>
