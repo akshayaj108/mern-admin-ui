@@ -7,6 +7,7 @@ import Root from "./layouts/Root";
 import Users from "./pages/users/UsersPage";
 import Restaurant from "./pages/restaurants/RestaurantPage";
 import Products from "./pages/products/Products";
+import RoleProtectedRoute from "./layouts/ProtectedLayout";
 
 export const router = createBrowserRouter([
   {
@@ -18,16 +19,23 @@ export const router = createBrowserRouter([
         element: <Dashboard />,
         children: [
           {
-            path: "",
+            // path: "",
+            //index: true instead of path: "" for the default child route
+            index: true,
             element: <HomePage />,
           },
           {
-            path: "/users",
-            element: <Users />,
-          },
-          {
-            path: "/restaurants",
-            element: <Restaurant />,
+            element: <RoleProtectedRoute allowedRoles={["admin"]} />,
+            children: [
+              {
+                path: "/users",
+                element: <Users />,
+              },
+              {
+                path: "/restaurants",
+                element: <Restaurant />,
+              },
+            ],
           },
           {
             path: "/products",

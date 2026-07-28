@@ -76,11 +76,7 @@ const Users = () => {
       });
     }
   }, [selectedUserDetails, form]);
-  const { user } = useAuthStore();
-
-  if (user?.role === "manager") {
-    return <Navigate to={"/"} />;
-  }
+ 
   const { data: users, isFetching, isError } = useGetUsers(queryParams);
   const { mutate: createUserMutate, isPending: isSubmitting } = useCreateUser();
   const { mutate: updateUserMutate, isPending: isUpdating } = useUpdateUser();
